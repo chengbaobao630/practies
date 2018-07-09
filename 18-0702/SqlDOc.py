@@ -45,34 +45,26 @@ def create_document_table(document_inner, result):
 
 
 if __name__ == '__main__':
-    document = Document()
-    document.add_heading('数据库{0}文档'.format(database), 0)
+
     connect = pymysql.connect(host=host, port=port, user=user, password=password, database=database)
     cursor = connect.cursor()
-    cursor.execute("SELECT TABLE_NAME,TABLE_COMMENT FROM information_schema.TABLES WHERE table_schema='{0}'".format(database))
-    results = cursor.fetchall()
-    for tableName in results:
-        document.add_heading("{0}:{1}".format(tableName[0], tableName[1]), level=1)
-        result = get_desc_info(cursor, tableName[0])
-        create_document_table(document, result)
-    # p = document.add_paragraph('A plain paragraph having some ')
-    # p.add_run('bold').bold = True
-    # p.add_run(' and some ')
-    # p.add_run('italic.').italic = True
-    #
-    # document.add_heading('Heading, level 1', level=1)
-    # document.add_paragraph('Intense quote', style='IntenseQuote')
-    #
-    # document.add_paragraph(
-    #     'first item in unordered list', style='ListBullet'
-    # )
-    # document.add_paragraph(
-    #     'first item in ordered list', style='ListNumber'
-    # )
+    cursor.execute("show databases")
+    databaseResults = cursor.fetchall()
+    for dbInfo in databaseResults:
+        database = dbInfo[0]
+        if not database.startswith('d_erp'):
+            continue
+        document = Document()
+        document.add_heading('数据库{0}文档'.format(database), 0)
+        cursor.execute("SELECT TABLE_NAME,TABLE_COMMENT FROM information_schema.TABLES "
+                       "WHERE table_schema='{0}'".format(database))
+        results = cursor.fetchall()
+        for tableName in results:
+            document.add_heading("{0}:{1}".format(tableName[0], tableName[1]), level=1)
+            result = get_desc_info(cursor, tableName[0])
+            create_document_table(document, result)
+        document.add_page_break()
 
-    # document.add_picture('monty-truth.png', width=Inches(1.25))
+        document.save('{0}.docx'.format(database))
 
-    document.add_page_break()
 
-    document.save('{0}.docx'.format(database))
-    document.save('{0}.docx'.format("demo"))
