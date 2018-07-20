@@ -65,6 +65,6 @@ if __name__ == '__main__':
             create_document_table(document, result)
         document.add_page_break()
 
-        document.save('{0}.docx'.format(database))
+        document.save('/media/psf/Home/develop/sunCart/ERP设计/d_erp_dbinfo/{0}.docx'.format(database))
 
 
