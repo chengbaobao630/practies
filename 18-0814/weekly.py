@@ -2,14 +2,13 @@
 # -*- coding: UTF-8 -*-
 import os
 import re
-import time
 from datetime import timedelta, datetime
 from enum import Enum
-import pythoncom
+
 import mammoth
 import win32com.client as win32
-from docx import Document
 from bs4 import BeautifulSoup
+from docx import Document
 
 
 class DateType(Enum):
@@ -95,9 +94,6 @@ def do(cell_param, type_in, week_params, prefix):
                 # cell_param.text = value()
                 rs = re.search("\d", cell_param.text)
                 if rs and rs.group():
-                    if "support" == key:
-                        print(key)
-                        print(rs.group())
                     cell_param.text = value(type_in, rs.group())
                 else:
                     cell_param.text = value()
@@ -123,11 +119,10 @@ def handler(cell_param):
 
 def sendemail(sub, body, file_path):
     outlook = win32.Dispatch('outlook.application')
-    namespace = outlook.GetNamespace('MAPI')
     receivers = ["799096114@qq.com", '554858452@qq.com']
     mail = outlook.CreateItem(0x0)
     mail.To = receivers[0]
-    mail.CC = '1060471903@qq.com;554858452@qq.com'
+    mail.CC = '1060471903@qq.com;'
     # mail.BCC = ['1060471903@qq.com', "799096114@qq.com"]
     mail.Subject = sub
     # mail.Body = MIMEText(body)
@@ -139,12 +134,9 @@ def sendemail(sub, body, file_path):
 
 if __name__ == '__main__':
     subject = "{0}_工作周报_{1}~{2}".format("程呈", this_week_start.strftime("%y-%m-%d"),
-                              this_week_end.strftime("%y-%m-%d"))
+                                        this_week_end.strftime("%y-%m-%d"))
     file_name = "{0}.doc".format(subject)
     document = Document("weekly-template.docx")
-    r = re.search("\d", "{support}")
-    if r and r.group():
-        print(r.group())
     for table in document.tables:
         for row in table.rows:
             for cell in row.cells:
@@ -164,14 +156,16 @@ if __name__ == '__main__':
             td_length = len(tds)
             if td_length < 5:
                 if td_length >= 2:
-                    tds[1]["colspan"] = 6-td_length
+                    tds[1]["colspan"] = 6 - td_length
                 elif td_length == 1:
                     tds[0]["colspan"] = 5
                 else:
                     continue
         sendemail(subject, """<html>
-	        <head>
-	            </head>
-	            <body>{0}
-                </body>
-            </html>""".format(soup.prettify()), os.path.dirname(os.path.realpath(file_name)) + os.path.altsep + file_name)
+                                    <head>
+                                    </head>
+                                    <body>
+                                        {0}
+                                    </body>
+                                </html>""".format(soup.prettify()),
+                  os.path.dirname(os.path.realpath(file_name)) + os.path.altsep + file_name)
